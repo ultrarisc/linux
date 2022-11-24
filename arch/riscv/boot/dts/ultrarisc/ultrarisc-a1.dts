@@ -23,11 +23,8 @@
 	cpus {
 		#address-cells = <0x01>;
 		#size-cells = <0x00>;
-		//timebase-frequency = <75000000>;
-		timebase-frequency = <520833>;
-
+		timebase-frequency = <75000000>;
 		cpu@0 {
-			phandle = <0x01>;
 			device_type = "cpu";
 			reg = <0x00>;
 			status = "okay";
@@ -36,11 +33,11 @@
 			mmu-type = "riscv,sv39";
 			clock-frequency = <75000000>;
 
-			interrupt-controller {
-				#interrupt-cells = <0x01>;
+			cpu0_intc:interrupt-controller {
+				#address-cells = <0x01>;
 				interrupt-controller;
 				compatible = "riscv,cpu-intc";
-				phandle = <0x02>;
+				#interrupt-cells = <0x01>;
 			};
 		};
 	};
@@ -75,20 +72,32 @@
 	};
 
 	soc {
+		compatible = "ucbbar,spike-bare-soc", "simple-bus";
 		#address-cells = <0x02>;
 		#size-cells = <0x02>;
-		compatible = "ucbbar,spike-bare-soc\0simple-bus";
 		ranges;
 
 		clint@60000000 {
 			compatible = "riscv,clint0";
-			interrupts-extended = <0x02 0x03 0x02 0x07>;
+			interrupts-extended = <&cpu0_intc 0x03>, <&cpu0_intc 0x07>;
 			reg = <0x00 0x60000000 0x00 0x100000>;
 		};
 
+		plic@50000000 {
+			#interrupt-cells = <0x01>;
+			#address-cells = <0x02>;
+			phandle = <0x01>;
+			compatible = "riscv,plic0";
+			interrupt-controller;
+			interrupts-extended = <&cpu0_intc 0x9>, <&cpu0_intc 0xb>;
+			reg = <0x00 0x50000000 0x00 0x400000>;
+			riscv,max-priority = <0x07>;
+			riscv,ndev = <0x0a>;
+		};
+
 		uart0@44a00000 {
+			interrupt-parent = <0x01>;
 			interrupts = <0x01>;
-			interrupt-parent = <0x03>;
 			clock-frequency = <75000000>;
 			current-speed = <115200>;
 			reg = <0x00 0x44a00000 0x00 0x10000>;
@@ -99,7 +108,7 @@
 
 		uart1@44a10000 {
 			interrupts = <0x04>;
-			interrupt-parent = <0x03>;
+			interrupt-parent = <0x01>;
 			clock-frequency = <75000000>;
 			current-speed = <115200>;
 			reg = <0x00 0x44a10000 0x00 0x10000>;
@@ -109,11 +118,11 @@
 			status = "disabled";
 		};
 
-		xps-spi@45000000 {
-			compatible = "xlnx,xps-spi-2.00.b\0xlnx,xps-spi-2.00.a";
+		spi@45000000 {
+			compatible = "xlnx,xps-spi-2.00.b", "xlnx,xps-spi-2.00.a";
 			#address-cells = <0x01>;
 			#size-cells = <0x00>;
-			interrupt-parent = <0x03>;
+			interrupt-parent = <0x01>;
 			interrupts = <0x02 0x02>;
 			fifo-size = <0x100>;
 			reg = <0x00 0x45000000 0x00 0x10000>;
@@ -136,7 +145,7 @@
 			compatible = "xlnx,xps-ethernetlite-1.00.a";
 			device_type = "network";
 			reg = <0x00 0x40000000 0x00 0x100000>;
-			interrupt-parent = <0x03>;
+			interrupt-parent = <0x01>;
 			interrupts = <0x03>;
 			local-mac-address = [00 18 3e 02 e3 e5];
 			phy-handle = <0x04>;
@@ -158,23 +167,11 @@
 					device_type = "ethernet-phy";
 					phy-mode = "mii";
 					status = "okay";
-					//reg = <0x17>;
-					reg = <0x5>;
-					phandle = <0x04>;
+					// reg = <0x17>;
+					reg = <0x05>;
+					phandle = <0x06>;
 				};
 			};
-		};
-
-		plic@50000000 {
-			#address-cells = <0x00>;
-			#interrupt-cells = <0x01>;
-			compatible = "riscv,plic0";
-			interrupt-controller;
-			interrupts-extended = <0x02 0x0b 0x02 0x09>;
-			reg = <0x00 0x50000000 0x00 0x400000>;
-			riscv,max-priority = <0x07>;
-			riscv,ndev = <0x0a>;
-			phandle = <0x03>;
 		};
 	};
 };
