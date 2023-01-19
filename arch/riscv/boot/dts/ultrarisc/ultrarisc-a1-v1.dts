@@ -1,0 +1,45 @@
+/* 
+* SPDX-License-Identifier: GPL-2.0+
+*
+* Copyright (c) 2019-2022 UltraRisc,Inc
+*
+* Authors:
+*   Wang yantong <wangyantong@ultrarisc.com>
+*/
+
+#include "ultrarisc.dtsi"
+
+
+
+/ {
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+	compatible = "ucbbar,spike-bare-dev";
+	model = "ucbbar,spike-bare";
+#if 0
+	chosen {
+		bootargs = "earlycon=sbi console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait";
+		stdout-path = "/soc/uart0@44a00000:115200";
+	};
+
+	 cpus {
+                timebase-frequency = <75000000>;
+        };
+
+#endif
+};
+
+
+&uart0 {
+        status = "okay";
+};
+
+&spi0 {
+        status = "disable";
+};
+
+
+&eth0 {
+        status = "disable";
+};
+

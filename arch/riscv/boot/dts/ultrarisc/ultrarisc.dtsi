@@ -1,0 +1,191 @@
+/* 
+* SPDX-License-Identifier: GPL-2.0+
+*
+* Copyright (c) 2019-2022 UltraRisc,Inc
+*
+* Authors:
+*   Yantong Wang <wangyantong@ultrarisc.com>
+*/
+
+/dts-v1/;
+
+/ {
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+	compatible = "ucbbar,spike-bare-dev";
+	model = "ucbbar,spike-bare";
+
+	chosen {
+		bootargs = "earlycon=sbi console=ttyS0,9600 root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait";
+		stdout-path = "/soc/uart0@20300000:9600";
+	};
+
+	cpus {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		timebase-frequency = <2500000>;
+
+		cpu@0 {
+			device_type = "cpu";
+			reg = <0x00>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcb";
+			mmu-type = "riscv,sv39";
+
+			clock-frequency = <5000000>;
+
+			cpu0_intc:interrupt-controller {
+				#address-cells = <0x01>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				#interrupt-cells = <0x01>;
+			};
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x00 0x80000000 0x02 0x00>;
+	};
+
+	pmu {
+		compatible = "riscv,pmu";
+		riscv,event-to-mhpmcounters = <0x01 0x01 0x01>, <0x02 0x02 0x04>;
+		riscv,event-to-mhpmevent = <0x01 0x00 0x01>, <0x02 0x00 0x04>;
+		riscv,raw-event-to-mhpmcounters = <0x00 0x01 0x00 0xff 0x1f8>, <0x00 0x02 0x00 0xff 0x1f8>, 
+											<0x00 0x03 0x00 0xff 0x1f8>, <0x00 0x04 0x00 0xff 0x1f8>, 
+											<0x00 0x05 0x00 0xff 0x1f8>, <0x00 0x06 0x00 0xff 0x1f8>, 
+											<0x00 0x07 0x00 0xff 0x1f8>, <0x00 0x08 0x00 0xff 0x1f8>, 
+											<0x00 0x09 0x00 0xff 0x1f8>, <0x00 0x0a 0x00 0xff 0x1f8>, 
+											<0x00 0x0b 0x00 0xff 0x1f8>, <0x00 0x0c 0x00 0xff 0x1f8>, 
+											<0x00 0x0d 0x00 0xff 0x1f8>, <0x00 0x0e 0x00 0xff 0x1f8>, 
+											<0x00 0x0f 0x00 0xff 0x1f8>, <0x00 0x10 0x00 0xff 0x1f8>, 
+											<0x00 0x11 0x00 0xff 0x1f8>, <0x00 0x12 0x00 0xff 0x1f8>, 
+											<0x00 0x13 0x00 0xff 0x1f8>, <0x00 0x14 0x00 0xff 0x1f8>, 
+											<0x00 0x15 0x00 0xff 0x1f8>, <0x00 0x20 0x00 0xff 0x1f8>, 
+											<0x00 0x21 0x00 0xff 0x1f8>, <0x00 0x22 0x00 0xff 0x1f8>, 
+											<0x00 0x23 0x00 0xff 0x1f8>, <0x00 0x24 0x00 0xff 0x1f8>, 
+											<0x00 0x25 0x00 0xff 0x1f8>, <0x00 0x26 0x00 0xff 0x1f8>, 
+											<0x00 0x27 0x00 0xff 0x1f8>, <0x00 0x28 0x00 0xff 0x1f8>, 
+											<0x00 0x29 0x00 0xff 0x1f8>, <0x00 0x2a 0x00 0xff 0x1f8>, 
+											<0x00 0x30 0x00 0xff 0x1f8>, <0x00 0x31 0x00 0xff 0x1f8>, 
+											<0x00 0x32 0x00 0xff 0x1f8>;
+	};
+
+	soc {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		compatible = "ucbbar,spike-bare-soc\0simple-bus";
+		ranges;
+
+		clocks {
+			compatible = "simple-bus";
+			u-boot,dm-pre-reloc;
+			spiclk: spiclk {
+				compatible = "fixed-clock";
+				clock-frequency = <5000000>;
+				#clock-cells = <0>;
+			};
+			gmacclk: gmacclk{
+				compatible = "fixed-clock";
+				clock-frequency = <5000000>;
+				#clock-cells = <0>;
+			};
+			gmac0clk_tx: gmac0clk_tx{
+				compatible = "fixed-clock";
+				clock-frequency = <25000000>;
+				#clock-cells = <0>;
+			};
+			gmac0clk_rx: gmac0clk_rx{
+				compatible = "fixed-clock";
+				clock-frequency = <25000000>;
+				#clock-cells = <0>;
+			};
+
+		};
+
+		clint@8000000 {
+			compatible = "riscv,clint0";
+			interrupts-extended = <&cpu0_intc 0x03>, <&cpu0_intc 0x07>;
+			reg = <0x00 0x8000000 0x00 0xc0000>;
+		};
+
+		plic@c000000 {
+			#interrupt-cells = <0x01>;
+			#address-cells = <0x02>;
+			phandle = <0x01>;
+			compatible = "riscv,plic0";
+			interrupt-controller;
+			interrupts-extended = <&cpu0_intc 0x9>, <&cpu0_intc 0xb>;
+			reg = <0x00 0xc000000 0x00 0x4000000>;
+			riscv,max-priority = <0x07>;
+			riscv,ndev = <0x0a>;
+		};
+
+		uart0: serial@20300000 {
+			interrupt-parent = <0x01>;
+			interrupts = <0x01>;
+			clock-frequency = <5000000>;
+			current-speed = <9600>;
+			reg = <0x00 0x20300000 0x00 0x10000>;
+			compatible = "ns16550a";
+			reg-offset = <0x1000>;
+			reg-shift = <0x02>;
+		};
+
+		spi0: spi@20320000 {
+			compatible = "baikal,bt1-ssi";
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			reg = <0x0 0x20320000 0x0 0x1000>;
+			interrupt-parent = <0x01>;
+			interrupts = <0x02>;
+			clocks = <&spiclk>;
+			clock-names = "ssi_clk";
+			num-cs = <3>;
+			spi-max-frequency = <2500000>;
+			mmc@0 {
+				compatible = "mmc-spi-slot";
+				spi-max-frequency = <2500000>;
+				reg = <0x00>;
+				voltage-ranges = <3300 3300>;
+				disable-wp;
+			};
+		};
+
+		eth0:eth@38000000 {
+				compatible = "snps,dwc-qos-ethernet-4.10";
+				clocks = <&gmacclk>, <&gmac0clk_tx>,<&gmac0clk_rx>;
+				clock-names = "gmac_clk", "gmac-clk-tx", "gmac-clk-rx";
+				interrupt-parent = <0x01>;
+				interrupts = <0x3>;
+				reg = <0x0 0x38000000 0x0 0x4000>;
+				phy-handle = <&phy0>;
+				local-mac-address = [00 18 3e 02 e3 e5];
+				phy-mode = "rgmii";
+				snps,en-tx-lpi-clockgating;
+				snps,en-lpi;
+				snps,write-requests = <2>;
+				snps,read-requests = <16>;
+				snps,burst-map = <0x7>;
+				snps,txpbl = <8>;
+				snps,rxpbl = <2>;
+				mdio {
+						#address-cells = <0x1>;
+						#size-cells = <0x0>;
+						phy0: phy@0 {
+								max-speed = <100>;
+								compatible = "ethernet-phy-id0141.0E40";
+								device_type = "ethernet-phy";
+								phy-mode = "rgmii";
+								status = "okay";
+								phandle = <0x04>;
+								reg = <0x5>;//19P
+								//reg = <0x17>;//e4000t
+						};
+				};
+		};
+			
+	};
+};
