@@ -155,11 +155,12 @@
 		};
 
 		eth0:eth@38000000 {
-				compatible = "snps,dwc-qos-ethernet-4.10";
+				compatible ="ultrarisc,dwmac","snps,dwc-qos-ethernet-4.10";
 				clocks = <&gmacclk>, <&gmac0clk_tx>,<&gmac0clk_rx>;
-				clock-names = "gmac_clk", "gmac-clk-tx", "gmac-clk-rx";
+				clock-names = "gmac-clk", "gmac-clk-tx", "gmac-clk-rx";
 				interrupt-parent = <0x01>;
-				interrupts = <0x3>;
+				interrupts = <0x1>;
+				interrupt-names = "macirq";
 				reg = <0x0 0x38000000 0x0 0x4000>;
 				phy-handle = <&phy0>;
 				local-mac-address = [00 18 3e 02 e3 e5];

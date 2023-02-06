@@ -9,6 +9,7 @@ config STMMAC_ETH
 	select PHYLINK
 	select CRC32
 	select RESET_CONTROLLER
+	default y
 	help
 	  This is the driver for the Ethernet IPs built around a
 	  Synopsys IP Core.
@@ -231,6 +232,17 @@ config DWMAC_INTEL_PLAT
 	  This selects the Intel platform specific glue layer support for
 	  the stmmac device driver. This driver is used for the Intel Keem Bay
 	  SoC.
+
+config DWMAC_ULTRARISC_PLAT
+	tristate "UltraRisc dwmac support"
+	depends on OF && COMMON_CLK
+	depends on STMMAC_ETH
+	default y
+	help
+	  Support for ethernet controllers on UltraRisc SoCs
+
+	  This selects the UltraRisc platform specific glue layer support for
+	  the stmmac device driver. This driver is used for UltraRisc SoCs.
 
 config DWMAC_VISCONTI
 	tristate "Toshiba Visconti DWMAC support"
