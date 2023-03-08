@@ -1,0 +1,114 @@
+/* 
+* SPDX-License-Identifier: GPL-2.0+
+*
+* Copyright (c) 2019-2022 UltraRisc,Inc
+*
+* Authors:
+*   Yantong Wang <wangyantong@ultrarisc.com>
+*/
+
+/dts-v1/;
+
+/ {
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+	compatible = "ucbbar,a1000-dev";
+	model = "ucbbar,a1000-bare";
+
+	chosen {
+		bootargs = "earlycon=sbi console=ttyS0,9600 root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait";
+		stdout-path = "/soc/uart0@20300000:9600";
+	};
+
+	cpus {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		timebase-frequency = <8000000>;          
+
+		cpu@0 {
+			device_type = "cpu";
+			reg = <0x00>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcbh";
+			mmu-type = "riscv,sv39";
+
+			clock-frequency = <10000000>;
+
+			cpu0_intc:interrupt-controller {
+				#address-cells = <0x01>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				#interrupt-cells = <0x01>;
+			};
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x00 0x80000000 0x02 0x00>;
+	};
+
+
+
+	soc {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		compatible = "ucbbar,a1000-bare-soc\0simple-bus";
+		ranges;
+
+
+		clint@8000000 {
+			compatible = "riscv,clint0";
+			interrupts-extended = <&cpu0_intc 0x03>, <&cpu0_intc 0x07>;
+			reg = <0x00 0x8000000 0x00 0xc0000>;
+		};
+
+		plic@c000000 {
+			#interrupt-cells = <0x01>;
+			#address-cells = <0x02>;
+			phandle = <0x01>;
+			compatible = "riscv,plic0";
+			interrupt-controller;
+			interrupts-extended = <&cpu0_intc 0x9>, <&cpu0_intc 0xb>;
+			reg = <0x00 0xc000000 0x00 0x4000000>;
+			riscv,max-priority = <0x07>;
+			riscv,ndev = <0x0a>;
+		};
+
+		uart0: serial@20300000 {
+			interrupt-parent = <0x01>;
+			interrupts = <0x01>;
+			clock-frequency = <3000000>;
+			current-speed = <9600>;
+			reg = <0x00 0x20300000 0x00 0x10000>;
+			compatible = "ns16550a";
+			reg-offset = <0x1000>;
+			reg-shift = <0x02>;
+		};
+
+		spi0: spi@20320000 {
+			compatible = "xlnx,xps-spi-2.00.b", "xlnx,xps-spi-2.00.a";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			interrupt-parent = <0x01>;
+			interrupts = < 2 2 >;
+			fifo-size = <256>;
+			reg = < 0x0 0x20320000 0x0 0x10000 >;
+			xlnx,family = "kintex7";
+			xlnx,fifo-exist = <0x1>;
+			xlnx,num-ss-bits = <0x1>;
+			xlnx,num-transfer-bits = <0x8>;
+			xlnx,sck-ratio = <0x4>;
+			mmc@0 {
+				compatible = "mmc-spi-slot";
+				spi-max-frequency = <2500000>;
+				reg = <0x00>;
+				voltage-ranges = <3300 3300>;
+				disable-wp;
+			};
+		};
+
+		
+	};
+};
