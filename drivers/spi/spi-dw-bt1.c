@@ -167,11 +167,8 @@ static int dw_spi_bt1_std_init(struct platform_device *pdev,
 {
 	struct dw_spi *dws = &dwsbt1->dws;
 
-	dws->irq = platform_get_irq(pdev, 0);
-	if (dws->irq < 0)
-		return dws->irq;
-
-	dws->num_cs = 4;
+	dws->irq = IRQ_NOTCONNECTED;
+	dws->num_cs = 3;
 
 	/*
 	 * Baikal-T1 Normal SPI Controllers don't always keep up with full SPI
