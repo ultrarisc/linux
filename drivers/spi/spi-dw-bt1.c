@@ -166,9 +166,16 @@ static int dw_spi_bt1_std_init(struct platform_device *pdev,
 			       struct dw_spi_bt1 *dwsbt1)
 {
 	struct dw_spi *dws = &dwsbt1->dws;
+	struct device *dev = &pdev->dev;
+	struct device_node *of_node = dev->of_node;
+	u32 num_cs = 0;
 
 	dws->irq = IRQ_NOTCONNECTED;
-	dws->num_cs = 3;
+	if (of_property_read_u32(of_node, "num-cs", &num_cs)) {
+		num_cs = 3;
+		dev_info(dev, "set num_cs to default 3\n");
+	}
+	dws->num_cs = num_cs;
 
 	/*
 	 * Baikal-T1 Normal SPI Controllers don't always keep up with full SPI
