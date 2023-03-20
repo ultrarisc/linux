@@ -170,7 +170,12 @@ static int dw_spi_bt1_std_init(struct platform_device *pdev,
 	struct device_node *of_node = dev->of_node;
 	u32 num_cs = 0;
 
-	dws->irq = IRQ_NOTCONNECTED;
+	dws->irq = platform_get_irq(pdev, 0);
+	if (dws->irq < 0) {
+		dev_info(dev,"can't get irq, switch to poll mode");
+		dws->irq = IRQ_NOTCONNECTED;
+	}
+
 	if (of_property_read_u32(of_node, "num-cs", &num_cs)) {
 		num_cs = 3;
 		dev_info(dev, "set num_cs to default 3\n");
