@@ -117,7 +117,7 @@
 			phandle = <0x01>;
 			compatible = "riscv,plic0";
 			interrupt-controller;
-			interrupts-extended = <&cpu0_intc 0x9>, <&cpu0_intc 0xb>;
+			interrupts-extended = <&cpu0_intc 0xd>, <&cpu0_intc 0x9>, <&cpu0_intc 0xffffffff>;
 			reg = <0x00 0xc000000 0x00 0x4000000>;
 			riscv,max-priority = <0x07>;
 			riscv,ndev = <0x0a>;
