@@ -1,10 +1,8 @@
 /* 
 * SPDX-License-Identifier: GPL-2.0+
 *
-* Copyright (c) 2019-2022 UltraRisc,Inc
+* Copyright (c) 2019-2023 UltraRISC
 *
-* Authors:
-*   Yantong Wang <wangyantong@ultrarisc.com>
 */
 
 /dts-v1/;
@@ -48,8 +46,6 @@
 		device_type = "memory";
 		reg = <0x00 0x80000000 0x02 0x00>;
 	};
-
-
 
 	soc {
 		#address-cells = <0x02>;
@@ -108,7 +104,5 @@
 				disable-wp;
 			};
 		};
-
-		
 	};
 };

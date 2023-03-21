@@ -1,0 +1,65 @@
+/* 
+* SPDX-License-Identifier: GPL-2.0+
+*
+* Copyright (c) 2019-2023 UltraRISC
+*
+*/
+
+#include "a1000.dtsi"
+
+/ {
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+	compatible = "ucbbar,spike-bare-dev";
+	model = "ucbbar,spike-bare";
+
+	pcie_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <125000000>;
+	};
+
+	pcie0 { // dw-pcie 5.9
+		// https://www.kernel.org/doc/Documentation/devicetree/bindings/pci/designware-pcie.txt
+		compatible = "snps,dw-pcie";
+		//23:21 3'b00x
+		// 2100_0000~213f_ffff
+		reg = <0x0 0x21000000 0x0 0x00400000>, /* IP Core registers */
+			 <0x0 0x40000000 0x0 0x01000000>, /* Configuration space */
+		reg-names = "dbi", "config";
+		
+		device_type = "pci";
+		dma-coherent;
+		bus-range = <0x0 0xff>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		// flags hi_start lo_start hi_ddr lo_ddr size
+		// https://stackoverflow.com/questions/29839805/pcie-device-tree-ranges-property-explanation
+		ranges = <0x81000000  0x0 0x41000000  0x0 0x41000000 0x0 0x01000000>,      /* I/O */
+				<0x82000000  0x0 0x42000000 0x0 0x42000000 0x0 0x01000000>,    /* mem */
+		num-lanes = <16>;
+
+		#interrupt-cells = <1>;
+		// A1000_SoC_Top - Control Design Spec, chap 3.2.2
+		interrupts = <40>, <41>, <42>, <43>, <44>, <45>, <46>, <47>, <48>, <49>;
+		interrupt-names = "msi", "inta", "intb", "intc", "intd";
+		interrupt-parent = <&plic>;
+		interrupt-map-mask = <0x0 0x0 0x0 0x7>;
+		interrupt-map = <0x0 0x0 0x0 0x1 &plic 43>,
+				<0x0 0x0 0x0 0x2 &plic 44>,
+				<0x0 0x0 0x0 0x3 &plic 45>,
+				<0x0 0x0 0x0 0x4 &plic 46>;
+
+		clock-names = "pcie_core";
+		clocks = <&pcie_clk>;
+		// resets = <&prci 4>;
+		// pcie_intc: legacy-interrupt-controller {
+		// 	#address-cells = <0>;
+		// 	#interrupt-cells = <1>;
+		// 	interrupt-controller;
+		// };
+		status = "okay";
+	}
+
+};
