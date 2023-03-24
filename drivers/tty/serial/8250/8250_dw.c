@@ -459,7 +459,7 @@ static int dw8250_probe(struct platform_device *pdev)
 	p->handle_irq	= dw8250_handle_irq;
 	p->pm		= dw8250_do_pm;
 	p->type		= PORT_8250;
-	p->flags	= UPF_SHARE_IRQ | UPF_FIXED_PORT;
+	p->flags	= UPF_SHARE_IRQ | UPF_FIXED_PORT | UPF_FIXED_TYPE;
 	p->dev		= dev;
 	p->iotype	= UPIO_MEM;
 	p->serial_in	= dw8250_serial_in;
