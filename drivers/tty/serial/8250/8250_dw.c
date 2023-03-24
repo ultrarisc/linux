@@ -416,6 +416,8 @@ static void dw8250_quirks(struct uart_port *p, struct dw8250_data *data)
 			p->serial_out = dw8250_serial_out38x;
 		if (of_device_is_compatible(np, "starfive,jh7100-uart"))
 			p->set_termios = dw8250_do_set_termios;
+		if (of_device_is_compatible(np, "ultrarisc,a1000_uart"))
+			p->flags |= UPF_FIXED_TYPE;
 
 	} else if (acpi_dev_present("APMC0D08", NULL, -1)) {
 		p->iotype = UPIO_MEM32;
@@ -459,7 +461,7 @@ static int dw8250_probe(struct platform_device *pdev)
 	p->handle_irq	= dw8250_handle_irq;
 	p->pm		= dw8250_do_pm;
 	p->type		= PORT_8250;
-	p->flags	= UPF_SHARE_IRQ | UPF_FIXED_PORT | UPF_FIXED_TYPE;
+	p->flags	= UPF_SHARE_IRQ | UPF_FIXED_PORT;
 	p->dev		= dev;
 	p->iotype	= UPIO_MEM;
 	p->serial_in	= dw8250_serial_in;
@@ -699,6 +701,7 @@ static const struct of_device_id dw8250_of_match[] = {
 	{ .compatible = "marvell,armada-38x-uart" },
 	{ .compatible = "renesas,rzn1-uart" },
 	{ .compatible = "starfive,jh7100-uart" },
+	{ .compatible = "ultrarisc,a1000_uart" },
 	{ /* Sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, dw8250_of_match);
