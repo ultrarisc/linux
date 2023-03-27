@@ -97,12 +97,11 @@
 				clock-frequency = <25000000>;
 				#clock-cells = <0>;
 			};
-			gmac0clk_rx: gmac0clk_rx{
+			stmmaceth: stmmaceth{
 				compatible = "fixed-clock";
-				clock-frequency = <25000000>;
+				clock-frequency = <6000000>;
 				#clock-cells = <0>;
 			};
-
 		};
 
 		clint@8000000 {
@@ -155,13 +154,16 @@
 		};
 
 		eth0:eth@38000000 {
-				compatible = "snps,dwc-qos-ethernet-4.10";
-				clocks = <&gmacclk>, <&gmac0clk_tx>,<&gmac0clk_rx>;
-				clock-names = "gmac_clk", "gmac-clk-tx", "gmac-clk-rx";
+				compatible ="ultrarisc,dwmac","snps,dwmac-5.20a";
+				clocks = <&gmacclk>, <&gmac0clk_tx>, <&stmmaceth>;
+				clock-names = "gmac-clk", "gmac-clk-tx","stmmaceth";
 				interrupt-parent = <0x01>;
-				interrupts = <0x3>;
+				interrupts = <0x1>;
+				interrupt-names = "macirq";
 				reg = <0x0 0x38000000 0x0 0x4000>;
-				phy-handle = <&phy0>;
+				snps,mtl-rx-config = <&mtl_rx_setup>;
+				snps,mtl-tx-config = <&mtl_tx_setup>;
+				//phy-handle = <&phy0>;
 				local-mac-address = [00 18 3e 02 e3 e5];
 				phy-mode = "rgmii";
 				snps,en-tx-lpi-clockgating;
@@ -171,19 +173,26 @@
 				snps,burst-map = <0x7>;
 				snps,txpbl = <8>;
 				snps,rxpbl = <2>;
+				max-speed = <100>;
+
 				mdio {
 						#address-cells = <0x1>;
 						#size-cells = <0x0>;
 						phy0: phy@0 {
-								max-speed = <100>;
-								compatible = "ethernet-phy-id0141.0E40";
-								device_type = "ethernet-phy";
-								phy-mode = "rgmii";
-								status = "okay";
 								phandle = <0x04>;
-								reg = <0x5>;//19P
-								//reg = <0x17>;//e4000t
+								reg = <0x5>;
+								status = "okay";
 						};
+				};
+
+			    mtl_rx_setup: rx-queues-config {
+					snps,rx-queues-to-use = <1>;
+					queue0 {};
+				};
+
+				mtl_tx_setup: tx-queues-config {
+					snps,tx-queues-to-use = <1>;
+					queue0 {};
 				};
 		};
 			

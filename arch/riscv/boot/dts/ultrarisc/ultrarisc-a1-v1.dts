@@ -40,6 +40,6 @@
 
 
 &eth0 {
-        status = "disable";
+        status = "okay";
 };
 
