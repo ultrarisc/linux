@@ -16,8 +16,8 @@
 	model = "ucbbar,spike-bare";
 
 	chosen {
-		bootargs = "earlycon=sbi console=ttyS0,9600 root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait";
-		stdout-path = "/soc/uart0@20300000:9600";
+		bootargs = "earlycon=sbi console=ttyS0,3906250 root=/dev/nfs rdinit=/linuxrc";
+		stdout-path = "/soc/uart0@20300000:3906250";
 	};
 
 	cpus {
@@ -126,9 +126,9 @@
 		    compatible = "ultrarisc,a1000_uart";
 		    reg = <0x00 0x20300000 0x00 0x100>;
 		    interrupt-parent = <0x01>;
-		    interrupts = <0x01>;
+		    interrupts = <17>;
 		    clock-frequency = <62500000>;
-		    current-speed = <1953125>;
+		    current-speed = <3906250>;
 		    reg-shift = <2>;
 		    reg-io-width = <4>;
 		};
@@ -172,9 +172,15 @@
 				snps,read-requests = <16>;
 				snps,burst-map = <0x7>;
 				snps,txpbl = <8>;
-				snps,rxpbl = <2>;
+				snps,rxpbl = <8>;
 				max-speed = <100>;
-
+				snps,aal;
+				snps,fixed-burst;
+				snps,axi-config = <&axi>;
+				axi: axi{
+					snps,wr_osr_lmt = <0>;
+					snps,rd_osr_lmt = <0>;
+				};
 				mdio {
 						#address-cells = <0x1>;
 						#size-cells = <0x0>;

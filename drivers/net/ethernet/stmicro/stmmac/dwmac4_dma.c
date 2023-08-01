@@ -213,6 +213,23 @@ static void _dwmac4_dump_dma_regs(void __iomem *ioaddr, u32 channel,
 		readl(ioaddr + DMA_CHAN_CUR_RX_BUF_ADDR(channel));
 	reg_space[DMA_CHAN_STATUS(channel) / 4] =
 		readl(ioaddr + DMA_CHAN_STATUS(channel));
+	
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_CONTROL(channel), reg_space[DMA_CHAN_CONTROL(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_TX_CONTROL(channel), reg_space[DMA_CHAN_TX_CONTROL(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_RX_CONTROL(channel), reg_space[DMA_CHAN_RX_CONTROL(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_TX_BASE_ADDR(channel), reg_space[DMA_CHAN_TX_BASE_ADDR(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_RX_BASE_ADDR(channel), reg_space[DMA_CHAN_RX_BASE_ADDR(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_TX_END_ADDR(channel), reg_space[DMA_CHAN_TX_END_ADDR(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_RX_END_ADDR(channel), reg_space[DMA_CHAN_RX_END_ADDR(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_TX_RING_LEN(channel), reg_space[DMA_CHAN_TX_RING_LEN(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_RX_RING_LEN(channel), reg_space[DMA_CHAN_RX_RING_LEN(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_INTR_ENA(channel), reg_space[DMA_CHAN_INTR_ENA(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_RX_WATCHDOG(channel), reg_space[DMA_CHAN_RX_WATCHDOG(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_SLOT_CTRL_STATUS(channel), reg_space[DMA_CHAN_SLOT_CTRL_STATUS(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_CUR_TX_DESC(channel), reg_space[DMA_CHAN_CUR_TX_DESC(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_CUR_TX_BUF_ADDR(channel), reg_space[DMA_CHAN_CUR_TX_BUF_ADDR(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_CUR_RX_BUF_ADDR(channel), reg_space[DMA_CHAN_CUR_RX_BUF_ADDR(channel) / 4]);
+	pr_err("reg is %x, value is %x\n", DMA_CHAN_STATUS(channel), reg_space[DMA_CHAN_STATUS(channel) / 4]);
 }
 
 static void dwmac4_dump_dma_regs(void __iomem *ioaddr, u32 *reg_space)

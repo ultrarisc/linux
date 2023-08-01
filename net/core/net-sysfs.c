@@ -23,6 +23,14 @@
 #include <linux/of.h>
 #include <linux/of_net.h>
 #include <linux/cpu.h>
+#include "../../drivers/net/ethernet/stmicro/stmmac/stmmac.h"
+#include "../../drivers/net/ethernet/stmicro/stmmac/hwif.h"
+#include "../../drivers/net/ethernet/stmicro/stmmac/dwmac1000.h"
+#include "../../drivers/net/ethernet/stmicro/stmmac/common.h"
+#include "../../drivers/net/ethernet/stmicro/stmmac/stmmac_ptp.h"
+#include "../../drivers/net/ethernet/stmicro/stmmac/stmmac_xdp.h"
+#include <uapi/linux/ip.h>
+#include <linux/ip.h>
 
 #include "net-sysfs.h"
 
@@ -153,6 +161,104 @@ static ssize_t address_show(struct device *dev, struct device_attribute *attr,
 	return ret;
 }
 static DEVICE_ATTR_RO(address);
+
+static ssize_t loopback_show(struct device *dev, struct device_attribute *attr,
+			    char *buf)
+{
+	ssize_t ret = 0;
+
+	return ret;
+}
+#define NUM_FRAGS 5
+#define FRAGMENT_SIZE 10
+#define NLMSG_GOODSIZE	SKB_WITH_OVERHEAD(PAGE_SIZE)
+
+static int start_loopback(struct sk_buff *skb, struct net_device *ndev)
+{
+	struct stmmac_priv *priv = netdev_priv(ndev);
+	u32 queue = skb_get_queue_mapping(skb);
+	struct dma_desc *tx_desc, *rx_desc;
+	struct stmmac_tx_queue *tx_q;
+	struct stmmac_rx_queue *rx_q;
+	skb_frag_t *frag = &skb_shinfo(skb)->frags[0];
+	int len = skb_frag_size(frag);
+	dma_addr_t tdes, rdes;
+	int desc_size;
+	u32 *reg_space;
+
+	desc_size = sizeof(struct dma_desc);
+	tx_q = &priv->tx_queue[queue];
+	rx_q = &priv->rx_queue[queue];
+	tx_desc = tx_q->dma_tx;
+	rx_desc = rx_q->dma_rx;
+	reg_space = kmalloc(PAGE_SIZE, GFP_KERNEL);
+
+	//tx
+	tdes = dma_map_single(priv->device, skb->data,
+			  4096, DMA_TO_DEVICE);
+	pr_err("tx des is %llx\n", tdes);
+	stmmac_set_desc_addr(priv, tx_desc, tdes);
+	stmmac_prepare_tx_desc(priv, tx_desc, 1, 64, 0,
+				0, 1, 1, skb->len);
+	stmmac_set_tx_owner(priv, tx_desc);
+
+	pr_err("tx_desc is %llx des0 %x des1 %x des2 %x des3 %x\n", 
+		virt_to_phys((unsigned long long)tx_desc), tx_desc->des0, tx_desc->des1, tx_desc->des2, tx_desc->des3);
+	//rx
+	pr_err("rx_desc is %llx des0 %x des1 %x des2 %x des3 %x\n", 
+		virt_to_phys((unsigned long long)rx_desc), rx_desc->des0, rx_desc->des1, rx_desc->des2, rx_desc->des3);
+	stmmac_set_rx_owner(priv, rx_desc, 0);
+
+	tx_q->tx_tail_addr = tx_q->dma_tx_phy +  desc_size;
+	wmb();
+	stmmac_set_tx_tail_ptr(priv, priv->ioaddr, tx_q->tx_tail_addr, 0);
+	stmmac_enable_dma_irq(priv, priv->ioaddr, 0, 1, 1);
+	stmmac_dump_dma_regs(priv, priv->ioaddr, reg_space);
+	kfree(reg_space);
+	return 0;
+}
+
+static struct sk_buff *setbuf(void)
+{
+	unsigned char *buf, *ptr;
+	struct sk_buff *skb;
+	unsigned int a = 0xff;
+	int i;
+
+	buf = kmalloc(PAGE_SIZE, GFP_DMA);
+	for (i = 0; i < 256; i++) {
+        buf[i] = a;
+		a--;
+    }
+	skb = alloc_skb(8192, GFP_DMA);
+	ptr = skb_put(skb, PAGE_SIZE);
+	memcpy(ptr, buf, PAGE_SIZE);
+	pr_err("put end skb datalen %x len %x data %llx head %llx, tail %llx end %llx", skb->data_len, skb->len, 
+		virt_to_phys(ptr), virt_to_phys(skb->head), (unsigned long long)(skb->tail), (unsigned long long)skb->end);
+
+	return skb;
+}
+
+static ssize_t loopback_store(struct device *dev, struct device_attribute *attr,
+			     const char *buf, size_t len)
+{
+	struct net_device *ndev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(ndev);
+	int i;
+	struct sk_buff *skb;
+
+	kstrtouint(buf, 0, &i);
+	if (i == 1) {
+		skb = setbuf();
+		ndev->netdev_ops->ndo_open(ndev);
+		start_loopback(skb, ndev);
+		mdelay(5);
+		kfree_skb(skb);
+	}
+
+	return len;
+}
+static DEVICE_ATTR_RW(loopback);
 
 static ssize_t broadcast_show(struct device *dev,
 			      struct device_attribute *attr, char *buf)
@@ -619,6 +725,7 @@ static ssize_t threaded_store(struct device *dev,
 static DEVICE_ATTR_RW(threaded);
 
 static struct attribute *net_class_attrs[] __ro_after_init = {
+	&dev_attr_loopback.attr,
 	&dev_attr_netdev_group.attr,
 	&dev_attr_type.attr,
 	&dev_attr_dev_id.attr,

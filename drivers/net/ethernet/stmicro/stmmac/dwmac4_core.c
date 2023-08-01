@@ -27,6 +27,7 @@ static void dwmac4_core_init(struct mac_device_info *hw,
 	u32 value = readl(ioaddr + GMAC_CONFIG);
 
 	value |= GMAC_CORE_INIT;
+	value |= BIT(12) | BIT(13);
 
 	if (hw->ps) {
 		value |= GMAC_CONFIG_TE;
@@ -276,8 +277,10 @@ static void dwmac4_dump_regs(struct mac_device_info *hw, u32 *reg_space)
 	void __iomem *ioaddr = hw->pcsr;
 	int i;
 
-	for (i = 0; i < GMAC_REG_NUM; i++)
+	for (i = 0; i < GMAC_REG_NUM; i++) {
 		reg_space[i] = readl(ioaddr + i * 4);
+		pr_err("reg is %px, value is %x\n", (i * 4), reg_space[i]);
+	}
 }
 
 static int dwmac4_rx_ipc_enable(struct mac_device_info *hw)
@@ -715,7 +718,7 @@ static void dwmac4_set_filter(struct mac_device_info *hw,
 	if (dev->features & NETIF_F_HW_VLAN_CTAG_FILTER)
 		value |= GMAC_PACKET_FILTER_VTFE;
 
-	writel(value, ioaddr + GMAC_PACKET_FILTER);
+	writel(0x800000c0, ioaddr + GMAC_PACKET_FILTER);
 
 	if (dev->flags & IFF_PROMISC && !hw->vlan_fail_q_en) {
 		if (!hw->promisc) {
@@ -1077,7 +1080,6 @@ static int dwmac4_config_l3_filter(struct mac_device_info *hw, u32 filter_no,
 
 	value = readl(ioaddr + GMAC_PACKET_FILTER);
 	value |= GMAC_PACKET_FILTER_IPFE;
-	writel(value, ioaddr + GMAC_PACKET_FILTER);
 
 	value = readl(ioaddr + GMAC_L3L4_CTRL(filter_no));
 
@@ -1131,7 +1133,6 @@ static int dwmac4_config_l4_filter(struct mac_device_info *hw, u32 filter_no,
 
 	value = readl(ioaddr + GMAC_PACKET_FILTER);
 	value |= GMAC_PACKET_FILTER_IPFE;
-	writel(value, ioaddr + GMAC_PACKET_FILTER);
 
 	value = readl(ioaddr + GMAC_L3L4_CTRL(filter_no));
 	if (udp) {

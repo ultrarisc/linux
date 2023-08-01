@@ -3264,6 +3264,7 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
 
 	/* Enable the MAC Rx/Tx */
 	stmmac_mac_set(priv, priv->ioaddr, true);
+	stmmac_set_filter(priv, priv->hw, dev);
 
 	/* Set the HW DMA mode and the COE */
 	stmmac_dma_operation_mode(priv);
@@ -3303,6 +3304,7 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
 	stmmac_set_rings_length(priv);
 
 	/* Enable TSO */
+#if 0
 	if (priv->tso) {
 		for (chan = 0; chan < tx_cnt; chan++) {
 			struct stmmac_tx_queue *tx_q = &priv->tx_queue[chan];
@@ -3336,7 +3338,7 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
 	/* Configure real RX and TX queues */
 	netif_set_real_num_rx_queues(dev, priv->plat->rx_queues_to_use);
 	netif_set_real_num_tx_queues(dev, priv->plat->tx_queues_to_use);
-
+#endif
 	/* Start the ball rolling... */
 	stmmac_start_all_dma(priv);
 
@@ -3648,7 +3650,7 @@ static int stmmac_open(struct net_device *dev)
 		pm_runtime_put_noidle(priv->device);
 		return ret;
 	}
-
+#if 0
 	if (priv->hw->pcs != STMMAC_PCS_TBI &&
 	    priv->hw->pcs != STMMAC_PCS_RTBI &&
 	    (!priv->hw->xpcs ||
@@ -3661,7 +3663,7 @@ static int stmmac_open(struct net_device *dev)
 			goto init_phy_error;
 		}
 	}
-
+#endif
 	/* Extra statistics */
 	memset(&priv->xstats, 0, sizeof(struct stmmac_extra_stats));
 	priv->xstats.threshold = tc;
@@ -3714,9 +3716,9 @@ static int stmmac_open(struct net_device *dev)
 
 	stmmac_init_coalesce(priv);
 
-	phylink_start(priv->phylink);
+	//phylink_start(priv->phylink);
 	/* We may have called phylink_speed_down before */
-	phylink_speed_up(priv->phylink);
+	//phylink_speed_up(priv->phylink);
 
 	ret = stmmac_request_irq(dev);
 	if (ret)
@@ -7134,7 +7136,8 @@ int stmmac_dvr_probe(struct device *device,
 	if (priv->hw->pcs != STMMAC_PCS_TBI &&
 	    priv->hw->pcs != STMMAC_PCS_RTBI) {
 		/* MDIO bus Registration */
-		ret = stmmac_mdio_register(ndev);
+		//ret = stmmac_mdio_register(ndev);
+		ret = 0;
 		if (ret < 0) {
 			dev_err(priv->device,
 				"%s: MDIO bus (id: %d) registration failed",
@@ -7147,12 +7150,12 @@ int stmmac_dvr_probe(struct device *device,
 		priv->plat->speed_mode_2500(ndev, priv->plat->bsp_priv);
 
 	if (priv->plat->mdio_bus_data && priv->plat->mdio_bus_data->has_xpcs) {
-		ret = stmmac_xpcs_setup(priv->mii);
+		//ret = stmmac_xpcs_setup(priv->mii);
 		if (ret)
 			goto error_xpcs_setup;
 	}
 
-	ret = stmmac_phy_setup(priv);
+	//ret = stmmac_phy_setup(priv);
 	if (ret) {
 		netdev_err(ndev, "failed to setup phy (%d)\n", ret);
 		goto error_phy_setup;
